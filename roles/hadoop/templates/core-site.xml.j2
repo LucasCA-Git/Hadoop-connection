@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- HDFS default -->
+    <property>
+        <name>fs.defaultFS</name>
+        <value>{{ hdfs_default_fs }}</value>
+    </property>
+
+    <!-- Proxy user para Trino -->
+    <property>
+        <name>hadoop.proxyuser.{{ trino_user }}.hosts</name>
+        <value>{{ trino_proxy_hosts }}</value>
+    </property>
+
+    <property>
+        <name>hadoop.proxyuser.{{ trino_user }}.groups</name>
+        <value>{{ trino_proxy_groups }}</value>
+    </property>
+</configuration>

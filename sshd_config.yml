@@ -1,0 +1,48 @@
+---
+- name: Configurar SSH para aceitar chaves Ed25519
+  hosts: all
+  become: yes
+  vars:
+    sshd_config_path: /etc/ssh/sshd_config
+    backup_sshd_config: yes
+
+  tasks:
+
+    - name: Fazer backup do arquivo sshd_config
+      ansible.builtin.copy:
+        src: "{{ sshd_config_path }}"
+        dest: "{{ sshd_config_path }}.bak"
+        remote_src: yes
+      when: backup_sshd_config
+
+    - name: Remover linha existente de PubkeyAcceptedKeyTypes, se houver
+      ansible.builtin.lineinfile:
+        path: "{{ sshd_config_path }}"
+        regexp: '^PubkeyAcceptedKeyTypes'
+        state: absent
+      register: keytypes_removed
+      notify: Reiniciar SSH
+
+    - name: Adicionar linha com PubkeyAcceptedKeyTypes
+      ansible.builtin.lineinfile:
+        path: "{{ sshd_config_path }}"
+        line: 'PubkeyAcceptedKeyTypes ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa'
+        insertafter: EOF
+        state: present
+      register: keytypes_added
+      notify: Reiniciar SSH
+
+    - name: Verificar se o serviço 'ssh' existe
+      stat:
+        path: /lib/systemd/system/ssh.service
+      register: ssh_service_ssh
+
+    - name: Definir nome do serviço SSH
+      set_fact:
+        ssh_service_name: "{{ 'ssh' if ssh_service_ssh.stat.exists else 'sshd' }}"
+
+  handlers:
+    - name: Reiniciar SSH
+      ansible.builtin.service:
+        name: "{{ ssh_service_name }}"
+        state: restarted

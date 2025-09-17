@@ -1,0 +1,5 @@
+---
+- name: Reiniciar Trino
+  ansible.builtin.systemd:
+    name: trino
+    state: restarted

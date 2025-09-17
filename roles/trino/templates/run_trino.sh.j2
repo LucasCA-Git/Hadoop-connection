@@ -1,0 +1,7 @@
+#!/bin/bash
+java -jar {{ trino_scripts_dir }}/trino-cli.jar \
+  --server https://{{ hostvars['master']['ansible_host'] }}:{{ trino_https_port }} \
+  --keystore-path {{ tls_cert_dir }}/trino_keystore.jks \
+  --keystore-password {{ keystore_password }} \
+  --user {{ ansible_user }} \
+  "$@"

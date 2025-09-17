@@ -1,0 +1,13 @@
+---
+- name: DEBUG - Verificar se a senha do keystore foi carregada
+  ansible.builtin.debug:
+    var: keystore_password
+  failed_when: keystore_password is not defined
+
+- include_tasks: 01_setup_users_dirs.yml
+- include_tasks: 02_install_java_python.yml
+- include_tasks: 03_install_trino.yml
+- include_tasks: 04_setup_tls.yml
+- include_tasks: 05_configure_trino.yml
+- include_tasks: 06_setup_scripts.yml
+- include_tasks: 07_setup_service.yml

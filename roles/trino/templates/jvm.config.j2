@@ -1,0 +1,12 @@
+-server
+-Xmx2G
+-XX:+UseG1GC
+-XX:+ExplicitGCInvokesConcurrent
+-XX:+HeapDumpOnOutOfMemoryError
+-XX:+ExitOnOutOfMemoryError
+-XX:-OmitStackTraceInFastThrow
+-XX:ReservedCodeCacheSize=512M
+-XX:PerMethodRecompilationCutoff=10000
+-XX:PerBytecodeRecompilationCutoff=10000
+-Dfile.encoding=UTF-8
+-Djava.io.tmpdir=/tmp

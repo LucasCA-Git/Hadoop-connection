@@ -1,0 +1,44 @@
+---
+- name: Criar grupo para o Hadoop
+  ansible.builtin.group:
+    name: "{{ hadoop_user }}"
+    state: present
+
+- name: Criar usuário para o Hadoop
+  ansible.builtin.user:
+    name: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
+    shell: /bin/bash
+    home: "/home/{{ hadoop_user }}"
+    state: present
+
+- name: Criar o diretório .ssh para o usuário hadoop
+  ansible.builtin.file:
+    path: "/home/{{ hadoop_user }}/.ssh"
+    state: directory
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
+    mode: '0700'
+
+- name: Gerar chave SSH para o usuário hadoop (apenas no master)
+  community.crypto.openssh_keypair:
+    path: "/home/{{ hadoop_user }}/.ssh/id_rsa"
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
+  when: inventory_hostname in groups["hadoop_master"]
+
+- name: Trazer a chave pública do master para o controlador
+  ansible.builtin.fetch:
+    src: "/home/{{ hadoop_user }}/.ssh/id_rsa.pub"
+    dest: "/tmp/master_id_rsa.pub"
+    flat: yes
+  run_once: true
+  when: inventory_hostname in groups['hadoop_master']
+
+- name: Garantir que a chave pública do master esteja em todos os nós
+  ansible.posix.authorized_key:
+    user: "{{ hadoop_user }}"
+    key: "{{ lookup('file', '/tmp/master_id_rsa.pub') }}"
+    state: present
+
+

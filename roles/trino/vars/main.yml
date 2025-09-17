@@ -1,0 +1,24 @@
+---
+trino_version: "449"
+java_version: "24.0.1"
+java_build: "9"
+java_home: /usr/local/java
+
+trino_user: "trino"
+trino_group: "trino"
+
+java_base_dir: "/usr/local/java"
+trino_install_dir: "/opt/trino"
+trino_data_dir: "/var/data/trino"
+trino_etc_dir: "{{ trino_install_dir }}/etc"
+trino_scripts_dir: "/usr/local/trino_scripts"
+tls_cert_dir: "/etc/trino"
+
+java_url: "https://github.com/adoptium/temurin24-binaries/releases/download/jdk-{{ java_version }}%2B{{ java_build }}/OpenJDK24U-jdk_x64_linux_hotspot_{{ java_version }}_{{ java_build }}.tar.gz"
+trino_server_url: "https://repo1.maven.org/maven2/io/trino/trino-server/{{ trino_version }}/trino-server-{{ trino_version }}.tar.gz"
+trino_cli_url: "https://repo1.maven.org/maven2/io/trino/trino-cli/{{ trino_version }}/trino-cli-{{ trino_version }}-executable.jar"
+
+trino_http_port: 9080
+trino_https_port: 9081
+
+trino_node_env: "development"

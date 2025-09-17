@@ -1,0 +1,11 @@
+---
+hadoop_version: "2.10.2"
+hadoop_url: "https://dlcdn.apache.org/hadoop/common/hadoop-{{ hadoop_version }}/hadoop-{{ hadoop_version }}.tar.gz"
+hadoop_install_dir: "/opt/hadoop"
+hadoop_data_dir: "/opt/hadoop_data"
+hadoop_user: "hadoop"
+
+hdfs_default_fs: "hdfs://master:9000"
+trino_user: "trino"
+trino_proxy_hosts: "*"
+trino_proxy_groups: "*" 

@@ -1,0 +1,24 @@
+all:
+  children:
+    hadoop_master:
+      hosts:
+        master:
+          ansible_host: 127.0.0.1
+          ansible_port: 2222
+          ansible_ssh_private_key_file: .vagrant/machines/master/virtualbox/private_key
+          private_ip: 192.168.56.10
+
+    hadoop_slaves:
+      hosts:
+        slave1:
+          ansible_host: 127.0.0.1
+          ansible_port: 2200
+          ansible_ssh_private_key_file: .vagrant/machines/slave1/virtualbox/private_key
+          private_ip: 192.168.56.11
+        slave2:
+          ansible_host: 127.0.0.1
+          ansible_port: 2201
+          ansible_ssh_private_key_file: .vagrant/machines/slave2/virtualbox/private_key
+          private_ip: 192.168.56.12
+  vars:
+    ansible_user: vagrant

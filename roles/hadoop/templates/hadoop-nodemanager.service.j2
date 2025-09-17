@@ -1,0 +1,15 @@
+[Unit]
+Description=Hadoop NodeManager
+After=network.target hadoop-resourcemanager.service
+
+[Service]
+Type=simple
+User={{ hadoop_user }}
+Group={{ hadoop_user }}
+ExecStart=/bin/bash -c 'source /etc/default/hadoop && {{ hadoop_install_dir }}/bin/yarn nodemanager'
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=5min
+
+[Install]
+WantedBy=multi-user.target

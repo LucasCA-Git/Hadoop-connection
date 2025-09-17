@@ -1,0 +1,70 @@
+---
+- name: Configurar JAVA_HOME e HADOOP_HEAPSIZE no hadoop-env.sh
+  ansible.builtin.blockinfile:
+    path: "{{ hadoop_install_dir }}/etc/hadoop/hadoop-env.sh"
+    block: |
+      export JAVA_HOME=/usr/local/java
+      export HADOOP_HEAPSIZE_MAX=512m
+      export HADOOP_HEAPSIZE_MIN=256m
+    create: yes
+
+- name: Configurar core-site.xml
+  ansible.builtin.template:
+    src: core-site.xml.j2
+    dest: "{{ hadoop_install_dir }}/etc/hadoop/core-site.xml"
+
+- name: Configurar hdfs-site.xml
+  ansible.builtin.template:
+    src: hdfs-site.xml.j2
+    dest: "{{ hadoop_install_dir }}/etc/hadoop/hdfs-site.xml"
+
+- name: Configurar mapred-site.xml
+  ansible.builtin.template:
+    src: mapred-site.xml.j2
+    dest: "{{ hadoop_install_dir }}/etc/hadoop/mapred-site.xml"
+
+- name: Configurar yarn-site.xml
+  ansible.builtin.template:
+    src: yarn-site.xml.j2
+    dest: "{{ hadoop_install_dir }}/etc/hadoop/yarn-site.xml"
+
+- name: Criar diretórios para NameNode e DataNode
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
+  loop:
+    - "{{ hadoop_data_dir }}/namenode"
+    - "{{ hadoop_data_dir }}/datanode"
+
+- name: Configurar variáveis de ambiente no .bashrc do usuário hadoop
+  ansible.builtin.blockinfile:
+    path: "/home/{{ hadoop_user }}/.bashrc"
+    block: |
+      # Variaveis de ambiente para o Hadoop
+      export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+      export HADOOP_HOME={{ hadoop_install_dir }}
+      export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+    create: yes
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
+
+- name: Configurar o arquivo de workers no master
+  ansible.builtin.template:
+    src: workers.j2
+    dest: "{{ hadoop_install_dir }}/etc/hadoop/workers"
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
+  when: inventory_hostname in groups['hadoop_master']
+
+- name: Garantir que o usuário Hadoop seja dono de todos os arquivos
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
+    recurse: yes
+  loop:
+    - "{{ hadoop_install_dir }}"
+    - "{{ hadoop_data_dir }}"

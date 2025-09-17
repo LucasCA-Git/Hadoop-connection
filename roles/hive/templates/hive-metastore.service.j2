@@ -1,0 +1,17 @@
+[Unit]
+Description=Hive Metastore
+After=network.target mariadb.service
+Requires=mariadb.service
+
+[Service]
+Type=forking
+User=hive
+Group=hive
+ExecStart={{ hive_install_dir }}/bin/hive --service metastore
+Restart=on-failure
+Environment=HIVE_HOME={{ hive_install_dir }}
+Environment=HADOOP_HOME={{ hadoop_install_dir }}
+Environment=JAVA_HOME={{ java_home }}
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+---
+- name: Copiar chave SSH para os nós
+  hosts: all
+  gather_facts: no
+  become: no
+
+  tasks:
+    - name: Adicionar chave pública autorizada
+      ansible.posix.authorized_key:
+        user: "{{ ansible_user }}"
+        state: present
+        key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"

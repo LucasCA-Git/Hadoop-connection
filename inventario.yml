@@ -1,0 +1,62 @@
+---
+all:
+  vars:
+    ansible_user: noctua
+    ansible_password: "Sds@n0ctu4"
+    ansible_port: 7654
+
+  children:
+    sds_mine:
+      hosts:
+        LNXSDSMINEINGESTORAPP:
+          ansible_host: 10.238.116.90
+        LNXSDSMINEMACHINELEARAPP:
+          ansible_host: 10.238.116.91
+        LNXSDSMINETRINOCOORDIAPP:
+          ansible_host: 10.238.116.92
+        LNXSDSMINETRINOWORKER01:
+          ansible_host: 10.238.116.93
+        LNXSDSMINETRINOWORKER02:
+          ansible_host: 10.238.116.94
+        LNXSDSMINEHADOOPMASTER:
+          ansible_host: 10.238.116.95
+        LNXSDSMINEHADOOPSLAVE01:
+          ansible_host: 10.238.116.96
+        LNXSDSMINEHADOOPSLAVE02:
+          ansible_host: 10.238.116.97
+        LNXSDSMINEARANGODB:
+          ansible_host: 10.238.116.98
+        LNXSDSMINEELASTICSEARCH:
+          ansible_host: 10.238.116.99
+        LNXSDSMINESEGURANCAAPP:
+          ansible_host: 10.238.116.100
+        LNXSDSMINEAPLICACAOAPI:
+          ansible_host: 10.238.116.101
+        LNXSDSMINEMONGODB:
+          ansible_host: 10.238.116.102
+
+    #Grupos por função
+      trino:
+        hosts:
+          LNXSDSMINETRINOCOORDIAPP:
+          LNXSDSMINETRINOWORKER01:
+          LNXSDSMINETRINOWORKER02:
+
+      hadoop:
+        hosts:
+          LNXSDSMINEHADOOPMASTER:
+          LNXSDSMINEHADOOPSLAVE01:
+          LNXSDSMINEHADOOPSLAVE02:
+
+      banco_de_dados:
+        hosts:
+          LNXSDSMINEARANGODB:
+          LNXSDSMINEMONGODB:
+          LNXSDSMINEELASTICSEARCH:
+
+      aplicacao:
+        hosts:
+          LNXSDSMINEINGESTORAPP:
+          LNXSDSMINEMACHINELEARAPP:
+          LNXSDSMINESEGURANCAAPP:
+          LNXSDSMINEAPLICACAOAPI:

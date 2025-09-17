@@ -1,0 +1,17 @@
+{% if inventory_hostname == "master" %}
+coordinator=true
+node-scheduler.include-coordinator=false
+{% else %}
+coordinator=false
+{% endif %}
+http-server.http.port={{ trino_http_port }}
+http-server.https.enabled=true
+http-server.https.port={{ trino_https_port }}
+http-server.https.keystore.path={{ tls_cert_dir }}/trino_keystore.jks
+http-server.https.keystore.key={{ keystore_password }}
+
+discovery.uri=https://master:{{ trino_https_port }}
+
+internal-communication.https.keystore.path={{ tls_cert_dir }}/trino_keystore.jks
+internal-communication.https.keystore.key={{ keystore_password }}
+internal-communication.https.truststore.path={{ tls_cert_dir }}/trino_keystore.jks

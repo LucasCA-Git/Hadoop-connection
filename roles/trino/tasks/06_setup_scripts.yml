@@ -1,0 +1,18 @@
+---
+- name: Baixar Trino CLI
+  ansible.builtin.get_url:
+    url: "{{ trino_cli_url }}"
+    dest: "{{ trino_scripts_dir }}/trino-cli.jar"
+    mode: '0755'
+
+- name: Criar script run_trino.sh
+  ansible.builtin.template:
+    src: run_trino.sh.j2
+    dest: "{{ trino_scripts_dir }}/run_trino.sh"
+    mode: '0755'
+
+- name: Criar /etc/profile.d/env_trino.sh
+  ansible.builtin.template:
+    src: env_trino.sh.j2
+    dest: /etc/profile.d/env_trino.sh
+    mode: '0755'

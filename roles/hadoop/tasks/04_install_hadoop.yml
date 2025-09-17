@@ -1,0 +1,23 @@
+---
+- name: Copiar o tarball do Hadoop para a máquina remota
+  ansible.builtin.copy:
+    src: "hadoop-{{ hadoop_version }}-src.tar.gz"
+    dest: "/tmp/hadoop-{{ hadoop_version }}.tar.gz"
+    mode: '0644'
+
+- name: Criar diretório de instalação do Hadoop
+  ansible.builtin.file:
+    path: "{{ hadoop_install_dir }}"
+    state: directory
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
+    mode: '0755'
+
+- name: Extrair o Hadoop
+  ansible.builtin.unarchive:
+    src: "/tmp/hadoop-{{ hadoop_version }}.tar.gz"
+    dest: "{{ hadoop_install_dir }}"
+    extra_opts: [--strip-components=1]
+    remote_src: yes
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"

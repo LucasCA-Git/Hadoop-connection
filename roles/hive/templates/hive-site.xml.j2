@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <!-- Metastore DB -->
+  <property>
+    <name>javax.jdo.option.ConnectionURL</name>
+    <value>jdbc:mysql://{{ metastore_db_host }}:3306/{{ metastore_db_name }}?createDatabaseIfNotExist=true</value>
+  </property>
+
+  <property>
+    <name>javax.jdo.option.ConnectionDriverName</name>
+    <value>com.mysql.cj.jdbc.Driver</value>
+  </property>
+
+  <property>
+    <name>javax.jdo.option.ConnectionUserName</name>
+    <value>{{ metastore_db_user }}</value>
+  </property>
+
+  <property>
+    <name>javax.jdo.option.ConnectionPassword</name>
+    <value>{{ metastore_db_password }}</value>
+  </property>
+
+  <!-- Metastore Thrift -->
+  <property>
+    <name>hive.metastore.uris</name>
+    <value>thrift://master:9083</value>
+  </property>
+
+  <!-- HDFS como warehouse -->
+  <property>
+    <name>hive.metastore.warehouse.dir</name>
+    <value>/user/hive/warehouse</value>
+  </property>
+</configuration>

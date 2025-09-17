@@ -1,0 +1,157 @@
+---
+- name: Criar grupo do Hive
+  ansible.builtin.group:
+    name: "{{ hive_group }}"
+    state: present
+
+- name: Criar usuário do Hive
+  ansible.builtin.user:
+    name: "{{ hive_user }}"
+    group: "{{ hive_group }}"
+    create_home: no
+    shell: /bin/bash
+
+- name: Instalar dependências no master
+  ansible.builtin.apt:
+    name:
+      - mariadb-server
+      - mariadb-client
+      - openjdk-17-jdk
+      - wget
+      - tar
+    state: present
+    update_cache: yes
+  when: inventory_hostname == "master"
+
+- name: Baixar Hive {{ hive_version }}
+  ansible.builtin.get_url:
+    url: "https://downloads.apache.org/hive/hive-{{ hive_version }}/apache-hive-{{ hive_version }}-bin.tar.gz"
+    dest: "/tmp/hive.tar.gz"
+
+- name: Criar diretório do Hive
+  ansible.builtin.file:
+    path: "{{ hive_install_dir }}"
+    state: directory
+    owner: "{{ hive_user }}"
+    group: "{{ hive_group }}"
+    mode: "0755"
+
+- name: Extrair Hive
+  ansible.builtin.unarchive:
+    src: "/tmp/hive.tar.gz"
+    dest: "{{ hive_install_dir }}"
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+    owner: "{{ hive_user }}"
+    group: "{{ hive_group }}"
+
+- name: Adicionar Hive ao PATH
+  ansible.builtin.lineinfile:
+    path: /etc/profile.d/hive.sh
+    line: 'export PATH=$PATH:{{ hive_install_dir }}/bin'
+    create: yes
+
+- name: Copiar MySQL Connector J para o master
+  ansible.builtin.copy:
+    src: mysql-connector-j_9.4.0-1ubuntu24.04_all.deb
+    dest: /tmp/mysql-connector-j.deb
+    mode: "0644"
+  when: inventory_hostname == "master"
+
+- name: Instalar MySQL Connector J via apt
+  ansible.builtin.apt:
+    deb: /tmp/mysql-connector-j.deb
+    state: present
+  when: inventory_hostname == "master"
+
+
+- name: Criar symlink do MySQL Connector no Hive lib
+  ansible.builtin.file:
+    src: /usr/share/java/mysql-connector-java-9.4.0.jar
+    dest: "{{ hive_install_dir }}/lib/mysql-connector-java.jar"
+    state: link
+    owner: "{{ hive_user }}"
+    group: "{{ hive_group }}"
+
+- name: Criar banco do metastore
+  community.mysql.mysql_db:
+    name: "{{ metastore_db_name }}"
+    state: present
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+  when: inventory_hostname == "master"
+
+- name: Criar usuário do metastore
+  community.mysql.mysql_user:
+    name: "{{ metastore_db_user }}"
+    password: "{{ metastore_db_password }}"
+    priv: "{{ metastore_db_name }}.*:ALL"
+    host: "%"
+    state: present
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+  when: inventory_hostname == "master"
+
+- name: Configurar hive-site.xml
+  ansible.builtin.template:
+    src: hive-site.xml.j2
+    dest: "{{ hive_install_dir }}/conf/hive-site.xml"
+    owner: "{{ hive_user }}"
+    group: "{{ hive_group }}"
+
+- name: Inicializar schema do metastore
+  ansible.builtin.command: "{{ hive_install_dir }}/bin/schematool -initSchema -dbType mysql -verbose"
+  args:
+    creates: "{{ hive_install_dir }}/metastore_initialized"
+  environment:
+    HADOOP_HOME: "{{ hadoop_install_dir }}"
+    PATH: "{{ ansible_env.PATH }}:{{ hadoop_install_dir }}/bin:{{ hadoop_install_dir }}/sbin"
+    JAVA_HOME: /usr/local/java
+  when: inventory_hostname == "master"
+
+
+- name: Criar marker file schema inicializado
+  ansible.builtin.file:
+    path: "{{ hive_install_dir }}/metastore_initialized"
+    state: touch
+  when: inventory_hostname == "master"
+
+- name: Criar systemd service para Hive Metastore
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/hive-metastore.service
+    content: |
+      [Unit]
+      Description=Hive Metastore
+      After=network.target mariadb.service
+
+      [Service]
+      Type=simple
+      User={{ hive_user }}
+      ExecStart={{ hive_install_dir }}/bin/hive --service metastore
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+  when: inventory_hostname == "master"
+
+- name: Habilitar e iniciar Hive Metastore
+  ansible.builtin.systemd:
+    name: hive-metastore
+    enabled: yes
+    state: started
+  when: inventory_hostname == "master"
+
+- name: Criar arquivo de serviço systemd para Hive Metastore
+  ansible.builtin.template:
+    src: hive-metastore.service.j2
+    dest: /etc/systemd/system/hive-metastore.service
+    mode: '0644'
+  notify: Reiniciar Hive Metastore
+
+- name: Recarregar o systemd, habilitar e iniciar o serviço Hive Metastore
+  ansible.builtin.systemd:
+    name: hive-metastore
+    daemon_reload: yes
+    enabled: yes
+    state: started
+

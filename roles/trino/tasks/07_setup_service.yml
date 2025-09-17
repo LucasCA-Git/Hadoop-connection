@@ -1,0 +1,14 @@
+---
+- name: Criar arquivo de serviço systemd para o Trino
+  ansible.builtin.template:
+    src: trino.service.j2
+    dest: /etc/systemd/system/trino.service
+    mode: '0644'
+  notify: Reiniciar Trino
+
+- name: Recarregar o systemd, habilitar e iniciar o serviço Trino
+  ansible.builtin.systemd:
+    name: trino
+    daemon_reload: yes
+    enabled: yes
+    state: started

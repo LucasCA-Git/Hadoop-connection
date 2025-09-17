@@ -1,0 +1,4 @@
+mariadb_root_password: "root_password"
+hive_db_name: "metastore"
+hive_db_user: "hive"
+hive_db_password: "hive_password"

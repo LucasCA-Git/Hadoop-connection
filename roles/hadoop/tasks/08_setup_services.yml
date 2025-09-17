@@ -1,0 +1,48 @@
+---
+- name: Copiar os arquivos de serviço do Master
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "/etc/systemd/system/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop:
+    - { src: 'hadoop-namenode.service.j2', dest: 'hadoop-namenode.service' }
+    - { src: 'hadoop-resourcemanager.service.j2', dest: 'hadoop-resourcemanager.service' }
+  when: inventory_hostname in groups["hadoop_master"]
+
+- name: Copiar os arquivos de serviço dos Slaves
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "/etc/systemd/system/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop:
+    - { src: 'hadoop-datanode.service.j2', dest: 'hadoop-datanode.service' }
+    - { src: 'hadoop-nodemanager.service.j2', dest: 'hadoop-nodemanager.service' }
+  when: inventory_hostname in groups["hadoop_slaves"]
+
+- name: Recarregar o systemd
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Habilitar e iniciar os serviços do Master
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  loop:
+    - hadoop-namenode.service
+    - hadoop-resourcemanager.service
+  when: inventory_hostname in groups["hadoop_master"]
+
+- name: Habilitar e iniciar os serviços dos Slaves
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  loop:
+    - hadoop-datanode.service
+    - hadoop-nodemanager.service
+  when: inventory_hostname in groups["hadoop_slaves"]

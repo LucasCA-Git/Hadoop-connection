@@ -1,0 +1,16 @@
+- name: Baixar Trino Server {{ trino_version }}
+  ansible.builtin.get_url:
+    url: "{{ trino_server_url }}"
+    dest: "/tmp/trino.tar.gz"
+    mode: '0644'
+    force: no
+
+- name: Extrair Trino Server
+  ansible.builtin.unarchive:
+    src: "/tmp/trino.tar.gz"
+    dest: "{{ trino_install_dir }}"
+    extra_opts: [--strip-components=1]
+    remote_src: yes
+    owner: "{{ trino_user }}"
+    group: "{{ trino_group }}"
+    creates: "{{ trino_install_dir }}/bin/launcher"

@@ -1,0 +1,27 @@
+---
+- name: Criar grupo trino
+  ansible.builtin.group:
+    name: "{{ trino_group }}"
+    state: present
+
+- name: Criar usuário trino
+  ansible.builtin.user:
+    name: "{{ trino_user }}"
+    group: "{{ trino_group }}"
+    shell: /bin/bash
+    home: "/home/{{ trino_user }}"
+
+- name: Criar todas as pastas necessárias
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ trino_user }}"
+    group: "{{ trino_group }}"
+    mode: '0755'
+  loop:
+    - "{{ java_base_dir }}"
+    - "{{ trino_install_dir }}"
+    - "{{ trino_data_dir }}"
+    - "{{ trino_etc_dir }}/catalog"
+    - "{{ trino_scripts_dir }}"
+    - "{{ tls_cert_dir }}"

@@ -1,0 +1,25 @@
+---
+- name: Parar os serviços do Master
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+  loop:
+    - hadoop-namenode.service
+    - hadoop-resourcemanager.service
+  when: inventory_hostname in groups["hadoop_master"]
+  ignore_errors: true
+
+- name: Parar os serviços dos Slaves
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+  loop:
+    - hadoop-datanode.service
+    - hadoop-nodemanager.service
+  when: inventory_hostname in groups["hadoop_slaves"]
+  ignore_errors: true
+
+- name: REMOVER DIRETÓRIOS DE DADOS ANTIGOS DO HADOOP (Garante um início limpo)
+  ansible.builtin.file:
+    path: "{{ hadoop_data_dir }}"
+    state: absent

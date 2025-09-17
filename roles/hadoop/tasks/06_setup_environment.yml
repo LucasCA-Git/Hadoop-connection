@@ -1,0 +1,10 @@
+---
+- name: Configurar variáveis de ambiente para Hadoop
+  ansible.builtin.copy:
+    dest: /etc/profile.d/hadoop.sh
+    content: |
+      export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+      export HADOOP_HOME={{ hadoop_install_dir }}
+      export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+      export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+    mode: '0755'

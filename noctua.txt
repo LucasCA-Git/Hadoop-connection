@@ -1,0 +1,3 @@
+noctua ALL=(ALL) NOPASSWD: ALL
+
+Sds@n0ctu4

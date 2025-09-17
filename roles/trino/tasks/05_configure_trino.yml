@@ -1,0 +1,20 @@
+---
+- name: Configurar jvm.config (RAM, etc)
+  ansible.builtin.template:
+    src: jvm.config.j2
+    dest: "{{ trino_etc_dir }}/jvm.config"
+
+- name: Configurar node.properties
+  ansible.builtin.template:
+    src: node.properties.j2
+    dest: "{{ trino_etc_dir }}/node.properties"
+
+- name: Configurar config.properties (com HTTPS)
+  ansible.builtin.template:
+    src: config.properties.j2
+    dest: "{{ trino_etc_dir }}/config.properties"
+
+- name: Configurar catálogo Hive
+  ansible.builtin.template:
+    src: catalog/hive.properties.j2
+    dest: "{{ trino_etc_dir }}/catalog/hive.properties"

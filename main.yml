@@ -1,0 +1,21 @@
+---
+- name: Instalar e configurar Trino Cluster
+  hosts: all
+  become: yes
+  vars_files:
+    - "{{ playbook_dir }}/group_vars/trino/vault.yml"
+  roles:
+    - trino
+
+- name: Instalar e configurar Hadoop Cluster
+  hosts: all
+  become: yes
+  roles:
+    - hadoop
+
+- name: Instalar e configurar Hive Metastore no master
+  hosts: hadoop_master
+  become: yes
+  roles:
+    - mariadb
+    - hive

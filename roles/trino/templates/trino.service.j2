@@ -1,0 +1,12 @@
+[Unit]
+Description=Trino Server
+After=network.target
+
+[Service]
+User={{ trino_user }}
+Group={{ trino_group }}
+ExecStart={{ trino_install_dir }}/bin/launcher run
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

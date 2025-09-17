@@ -1,0 +1,104 @@
+- name: Gerar Keystore e certificado (apenas no coordinator)
+  block:
+    - name: Criar diretório TLS (se necessário)
+      ansible.builtin.file:
+        path: "{{ tls_cert_dir }}"
+        state: directory
+        owner: "{{ trino_user }}"
+        group: "{{ trino_group }}"
+        mode: '0755'
+
+    - name: Gerar chave privada com OpenSSL
+      ansible.builtin.command: >
+        openssl genrsa -out {{ tls_cert_dir }}/trino.key 2048
+      args:
+        creates: "{{ tls_cert_dir }}/trino.key"
+
+    - name: Gerar certificado autoassinado com OpenSSL (com SAN)
+      ansible.builtin.command: >
+        openssl req -x509 -nodes -days 365
+        -key {{ tls_cert_dir }}/trino.key
+        -out {{ tls_cert_dir }}/trino.pem
+        -subj "/C=BR/O=XGD/CN=master"
+        -addext "subjectAltName = DNS:master,DNS:localhost,IP:192.168.56.10,IP:127.0.0.1"
+      args:
+        creates: "{{ tls_cert_dir }}/trino.pem"
+
+    - name: Gerar PKCS12 com chave + certificado
+      ansible.builtin.command: >
+        openssl pkcs12 -export
+        -in {{ tls_cert_dir }}/trino.pem
+        -inkey {{ tls_cert_dir }}/trino.key
+        -name trino_cert
+        -out {{ tls_cert_dir }}/trino_keystore.p12
+        -passout pass:{{ keystore_password }}
+      args:
+        creates: "{{ tls_cert_dir }}/trino_keystore.p12"
+
+    - name: Converter PKCS12 para JKS
+      ansible.builtin.command: >
+        {{ java_home }}/bin/keytool -importkeystore
+        -deststorepass {{ keystore_password }}
+        -destkeypass {{ keystore_password }}
+        -destkeystore {{ tls_cert_dir }}/trino_keystore.jks
+        -srckeystore {{ tls_cert_dir }}/trino_keystore.p12
+        -srcstoretype PKCS12
+        -srcstorepass {{ keystore_password }}
+        -alias trino_cert
+      args:
+        creates: "{{ tls_cert_dir }}/trino_keystore.jks"
+
+    - name: Importar o certificado publico para o JKS como confiavel (Idempotente)
+      ansible.builtin.shell:
+        cmd: >
+          {{ java_home }}/bin/keytool -list -keystore {{ tls_cert_dir }}/trino_keystore.jks -storepass {{ keystore_password }} -alias trino_ca >/dev/null 2>&1
+          || 
+          {{ java_home }}/bin/keytool -importcert -keystore {{ tls_cert_dir }}/trino_keystore.jks -storepass {{ keystore_password }} -alias trino_ca -file {{ tls_cert_dir }}/trino.pem -noprompt
+      changed_when: false
+      
+    - name: Ajustar permissões dos arquivos gerados
+      ansible.builtin.file:
+        path: "{{ tls_cert_dir }}/{{ item }}"
+        owner: "{{ trino_user }}"
+        group: "{{ trino_group }}"
+        mode: '0644'
+      loop:
+        - trino.key
+        - trino.pem
+        - trino_keystore.p12
+        - trino_keystore.jks
+
+  when: inventory_hostname == "master"
+  run_once: true
+
+- name: Copiar arquivos TLS do master para local (control node)
+  ansible.builtin.fetch:
+    src: "{{ tls_cert_dir }}/{{ item }}"
+    dest: "/tmp/trino_tls/{{ item }}"
+    flat: yes
+  loop:
+    - trino_keystore.jks
+    - trino.pem
+  when: inventory_hostname == "master"
+  run_once: true
+
+- name: Garantir que o diretório TLS exista nos workers
+  ansible.builtin.file:
+    path: "{{ tls_cert_dir }}"
+    state: directory
+    owner: "{{ trino_user }}"
+    group: "{{ trino_group }}"
+    mode: '0755'
+  when: inventory_hostname != "master"
+
+- name: Distribuir arquivos TLS para os workers
+  ansible.builtin.copy:
+    src: "/tmp/trino_tls/{{ item }}"
+    dest: "{{ tls_cert_dir }}/{{ item }}"
+    owner: "{{ trino_user }}"
+    group: "{{ trino_group }}"
+    mode: '0644'
+  loop:
+    - trino_keystore.jks
+    - trino.pem
+  when: inventory_hostname != "master"

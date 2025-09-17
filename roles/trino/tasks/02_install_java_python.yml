@@ -1,0 +1,62 @@
+---
+  - name: Remover JDKs antigos
+    ansible.builtin.package:
+      name: openjdk-*
+      state: absent
+
+  - name: Baixar Java 24 Temurin
+    ansible.builtin.get_url:
+      url: "{{ java_url }}"
+      dest: "/tmp/java.tar.gz"
+      mode: '0644'
+
+  - name: Criar diretório base do Java
+    ansible.builtin.file:
+      path: "{{ java_base_dir }}"
+      state: directory
+      owner: root
+      group: root
+      mode: '0755'
+
+  - name: Extrair Java
+    ansible.builtin.unarchive:
+      src: "/tmp/java.tar.gz"
+      dest: "{{ java_base_dir }}"
+      extra_opts: [--strip-components=1]
+      remote_src: yes
+      owner: root
+      group: root
+
+  - name: Criar symlink para java
+    ansible.builtin.file:
+      src: "{{ java_base_dir }}/bin/java"
+      dest: /usr/bin/java
+      state: link
+      force: yes
+
+  - name: Configurar JAVA_HOME e PATH
+    ansible.builtin.copy:
+      dest: /etc/profile.d/env_java.sh
+      content: |
+        export JAVA_HOME={{ java_base_dir }}
+        export PATH=$JAVA_HOME/bin:$PATH
+      mode: '0755'
+
+  - name: Atualizar cache do apt
+    ansible.builtin.apt:
+      update_cache: yes
+      cache_valid_time: 3600
+
+  - name: Instalar Python 3 e pip
+    ansible.builtin.package:
+      name:
+        - python3
+        - python3-pip
+      state: present
+
+  - name: Criar symlink para python
+    ansible.builtin.file:
+      src: /usr/bin/python3
+      dest: /usr/bin/python
+      state: link
+      force: yes

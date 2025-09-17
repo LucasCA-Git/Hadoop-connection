@@ -1,0 +1,44 @@
+---
+- name: Instalar MariaDB server
+  ansible.builtin.apt:
+    name: mariadb-server
+    state: present
+    update_cache: yes
+
+- name: Garantir que MariaDB esteja rodando
+  ansible.builtin.service:
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: Instalar dependências Python para gerenciar MySQL/MariaDB
+  ansible.builtin.apt:
+    name: python3-pymysql
+    state: present
+
+- name: Configurar senha root do MariaDB se ainda não estiver configurada
+  community.mysql.mysql_user:
+    name: root
+    host: localhost
+    password: "{{ mariadb_root_password }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  check_mode: no
+  ignore_errors: yes
+
+
+- name: Criar banco de dados para o Hive Metastore
+  community.mysql.mysql_db:
+    name: "{{ hive_db_name }}"
+    state: present
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+
+- name: Criar usuário do Hive
+  community.mysql.mysql_user:
+    name: "{{ hive_db_user }}"
+    password: "{{ hive_db_password }}"
+    priv: "{{ hive_db_name }}.*:ALL"
+    host: "%"
+    state: present
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"

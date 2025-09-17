@@ -1,0 +1,22 @@
+<configuration>
+    <property>
+        <name>dfs.replication</name>
+        <value>{{ groups['hadoop_slaves'] | length }}</value>
+    </property>
+    <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>file:{{ hadoop_data_dir }}/namenode</value>
+    </property>
+    <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>file:{{ hadoop_data_dir }}/datanode</value>
+    </property>
+    <property>
+        <name>dfs.namenode.rpc-address</name>
+        <value>master:9000</value>
+    </property>
+    <property>
+        <name>dfs.namenode.http-address</name>
+        <value>0.0.0.0:50070</value>
+    </property>
+</configuration>

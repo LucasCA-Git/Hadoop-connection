@@ -1,0 +1,15 @@
+[Unit]
+Description=Hadoop NameNode
+After=network.target
+
+[Service]
+Type=simple
+User={{ hadoop_user }}
+Group={{ hadoop_user }}
+ExecStart=/bin/bash -c 'source /etc/default/hadoop && {{ hadoop_install_dir }}/bin/hdfs namenode'
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=5min
+
+[Install]
+WantedBy=multi-user.target

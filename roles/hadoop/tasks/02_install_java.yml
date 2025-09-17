@@ -1,0 +1,31 @@
+---
+- name: Tentar instalar OpenJDK 8 dos repositórios padrão
+  ansible.builtin.apt:
+    name:
+      - openjdk-8-jdk
+      - acl
+    state: present
+    update_cache: yes
+  register: apt_install_result
+  ignore_errors: true
+
+- name: Instalar OpenJDK 8 via PPA se a primeira tentativa falhou
+  when: apt_install_result.failed
+  block:
+    - name: Instalar pré-requisitos para adicionar repositórios
+      ansible.builtin.apt:
+        name: software-properties-common
+        state: present
+
+    - name: Adicionar repositório PPA para o Java
+      ansible.builtin.apt_repository:
+        repo: ppa:linuxuprising/java
+        state: present
+
+    - name: Instalar OpenJDK 8 do PPA
+      ansible.builtin.apt:
+        name:
+          - openjdk-8-jdk
+          - acl
+        state: present
+        update_cache: yes

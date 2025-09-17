@@ -1,0 +1,10 @@
+---
+- name: Distribuir os hosts para todas as máquinas
+  ansible.builtin.blockinfile:
+    path: /etc/hosts
+    block: |
+      # Entradas do Hadoop Cluster
+      {% for host in groups['all'] %}
+      {{ hostvars[host]['private_ip'] }} {{ hostvars[host]['inventory_hostname'] }}
+      {% endfor %}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK FOR HADOOP CLUSTER"

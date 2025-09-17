@@ -1,0 +1,27 @@
+---
+- name: limpa a instalação
+  ansible.builtin.import_tasks: 00_cleanup.yml
+
+- name: Incluir configuração de /etc/hosts
+  ansible.builtin.import_tasks: 01_setup_hosts.yml
+
+- name: Incluir instalação do Java 8
+  ansible.builtin.import_tasks: 02_install_java.yml
+
+- name: Incluir configuração do usuário e SSH
+  ansible.builtin.import_tasks: 03_setup_user.yml
+
+- name: Incluir instalação do Hadoop
+  ansible.builtin.import_tasks: 04_install_hadoop.yml
+
+- name: Incluir configuração dos arquivos do Hadoop
+  ansible.builtin.import_tasks: 05_configure_hadoop.yml
+
+- name: Incluir configuração do ambiente
+  ansible.builtin.import_tasks: 06_setup_environment.yml
+
+- name: Incluir criação de diretórios extras
+  ansible.builtin.import_tasks: 07_setup_extra_dirs.yml
+
+- name: Incluir configuração dos serviços systemd
+  ansible.builtin.import_tasks: 08_setup_services.yml
