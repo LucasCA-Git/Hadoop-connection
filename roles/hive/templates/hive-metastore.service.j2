@@ -4,7 +4,7 @@ After=network.target mariadb.service
 Requires=mariadb.service
 
 [Service]
-Type=forking
+Type=simple
 User=hive
 Group=hive
 ExecStart={{ hive_install_dir }}/bin/hive --service metastore

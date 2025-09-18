@@ -23,10 +23,11 @@
     update_cache: yes
   when: inventory_hostname == "master"
 
-- name: Baixar Hive {{ hive_version }}
-  ansible.builtin.get_url:
-    url: "https://downloads.apache.org/hive/hive-{{ hive_version }}/apache-hive-{{ hive_version }}-bin.tar.gz"
-    dest: "/tmp/hive.tar.gz"
+- name: Copiar Hive {{ hive_version }} da máquina local
+  ansible.builtin.copy:
+    src: apache-hive-{{ hive_version }}-bin.tar.gz
+    dest: /tmp/hive.tar.gz
+    mode: '0644'
 
 - name: Criar diretório do Hive
   ansible.builtin.file:

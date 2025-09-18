@@ -1,7 +1,7 @@
 ---
 - name: Copiar o tarball do Hadoop para a máquina remota
   ansible.builtin.copy:
-    src: "hadoop-{{ hadoop_version }}-src.tar.gz"
+    src: "hadoop-{{ hadoop_version }}.tar.gz"
     dest: "/tmp/hadoop-{{ hadoop_version }}.tar.gz"
     mode: '0644'
 

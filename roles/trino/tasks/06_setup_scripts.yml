@@ -1,9 +1,11 @@
 ---
-- name: Baixar Trino CLI
-  ansible.builtin.get_url:
-    url: "{{ trino_cli_url }}"
+- name: Copiar Trino CLI
+  ansible.builtin.copy:
+    src: "trino-cli-{{ trino_version }}-executable.jar"
     dest: "{{ trino_scripts_dir }}/trino-cli.jar"
     mode: '0755'
+    owner: "{{ trino_user }}"
+    group: "{{ trino_group }}"
 
 - name: Criar script run_trino.sh
   ansible.builtin.template:

@@ -1,9 +1,10 @@
-- name: Baixar Trino Server {{ trino_version }}
-  ansible.builtin.get_url:
-    url: "{{ trino_server_url }}"
+- name: Copiar Trino Server para o host
+  ansible.builtin.copy:
+    src: "trino-server-{{ trino_version }}.tar.gz"
     dest: "/tmp/trino.tar.gz"
     mode: '0644'
-    force: no
+    owner: "{{ trino_user }}"
+    group: "{{ trino_group }}"
 
 - name: Extrair Trino Server
   ansible.builtin.unarchive:

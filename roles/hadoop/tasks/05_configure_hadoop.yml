@@ -3,7 +3,7 @@
   ansible.builtin.blockinfile:
     path: "{{ hadoop_install_dir }}/etc/hadoop/hadoop-env.sh"
     block: |
-      export JAVA_HOME=/usr/local/java
+      export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
       export HADOOP_HEAPSIZE_MAX=512m
       export HADOOP_HEAPSIZE_MIN=256m
     create: yes
