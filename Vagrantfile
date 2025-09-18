@@ -2,14 +2,14 @@
 # vi: set ft=ruby :
 
 VAGRANTFILE_API_VERSION = "2"
-N_SLAVES = 1
+N_SLAVES = 1 # Número de nós escravos
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "bento/ubuntu-24.04"
   config.vm.boot_timeout = 600
 
   config.vm.provider "virtualbox" do |vb|
-    vb.memory = "1500" # Diminuir se estiver com pouca RAM
+    vb.memory = "1500" # Memória em MB
     vb.cpus = 2
     vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
     vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
