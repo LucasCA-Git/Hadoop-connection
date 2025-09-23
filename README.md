@@ -103,3 +103,49 @@ cd /hadoop-connection/roles/trino/files
 wget https://repo1.maven.org/maven2/io/trino/trino-server/449/trino-server-449.tar.gz
 
 ```
+
+### aqui estão as configurações essenciais para colocar o trino funcionando com master e worker 
+
+# MASTER
+```bash
+vagrant@master:/opt/trino/etc$ sudo nano config.properties 
+```
+```txt
+coordinator=true
+http-server.http.port=8080
+discovery.uri=http://192.168.56.10:8080
+node.environment=production
+node.id=master
+```
+```bash
+vagrant@master:/opt/trino/etc$ sudo nano node.properties
+```
+```txt
+node.environment=development
+node.id=master
+node.data-dir=/var/data/trino
+```
+
+# WORKER
+```bash
+vagrant@slave1:/opt/trino/etc$ sudo nano config.properties 
+```
+```txt
+coordinator=false
+http-server.http.enabled=true
+http-server.http.port=8080
+discovery.uri=http://192.168.56.10:8080
+node.environment=production
+node.id=slave1
+```
+```bash
+vagrant@slave1:/opt/trino/etc$ sudo nano node.properties
+```
+```txt
+node.environment=development
+node.id=slave1
+node.data-dir=/var/data/trino
+```
+
+## Trino funcionando com Master e Worker
+![Trino funcionando](static/trino.png)
